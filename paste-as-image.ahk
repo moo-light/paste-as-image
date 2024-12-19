@@ -4,35 +4,48 @@
 #Include libs/WinClip.ahk
 
 wc := WinClip()
-~^v:: {
+$~^v:: {
     if !WinActive("ahk_exe explorer.exe") {
         return
     }
     ; check if clipboard is an snipped image
+
     if !wc.GetBitmap() {
-        return
-    }
-    fileName := InputBox("Enter Filename", "Please enter the filename:",,"image")
-    if !fileName {
-        MsgBox("Canceled save!")
+        SendInput "^v" ; send default pasting behavior
         return
     }
     savePath := explorerGetPath()
-    fullPath := savePath . "\" . fileName.Value . ".jpeg"
-    if FileExist(fullPath) {
-        MsgBox("File already exists!")
+    Label:
+    fileName := InputBox(Format("Saving to {1}`n Please enter the filename:", savePath) , , , "image")
+    if fileName.Result == "Cancel" {
+        MsgBox("Canceled save!")
         return
     }
-    wc.SaveBitmap(fullPath, "jpeg")
+    fullPath := savePath . "\" . RTrim(fileName.Value) . ".png"
+
+    if FileExist(fullPath) {
+        MsgBox("File already exists!")
+        goto('Label')
+    }
+    wc.SaveBitmap(fullPath, "png")
 }
 
-explorerGetPath(hwnd := 0) { ; https://www.autohotkey.com/boards/viewtopic.php?p=387113#p387113
-    static winTitle := 'ahk_class CabinetWClass'
-    hWnd ? explorerHwnd := WinExist(winTitle ' ahk_id ' hwnd)
-        : ((!explorerHwnd := WinActive(winTitle)) && explorerHwnd := WinExist(winTitle))
-    if explorerHwnd
-        for window in ComObject('Shell.Application').Windows
-            try if window && window.hwnd && window.hwnd = explorerHwnd
-                return window.Document.Folder.Self.Path
-    return False
+; get current explorer path
+; https://www.reddit.com/r/AutoHotkey/comments/10fmk4h/get_path_of_active_explorer_tab/
+explorerGetPath(hwnd:=WinExist("A")) {
+    activeTab := 0
+    try activeTab := ControlGetHwnd("ShellTabWindowClass1", hwnd)
+    for w in ComObject("Shell.Application").Windows {
+        if (w.hwnd != hwnd)
+            continue
+        if activeTab {
+            static IID_IShellBrowser := "{000214E2-0000-0000-C000-000000000046}"
+            shellBrowser := ComObjQuery(w, IID_IShellBrowser, IID_IShellBrowser)
+            ComCall(3, shellBrowser, "uint*", &thisTab:=0)
+            if (thisTab != activeTab)
+                continue
+        }
+        return w.Document.Folder.Self.Path
+    }
+    return false
 }

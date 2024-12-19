@@ -10,7 +10,7 @@ A simple script using `WinClipv2` libraries written in Autohotkey language, help
 
 ## How It Works
 
-1. The script checks if the **Clipboard** contains an image. Ignore this script if the clipboard is text format.
+1. The script checks if the **Clipboard** contains an image. The image script will not run if the clipboard is text format.
 
 <img src="assets/documents/how-to-use-1.jpeg" alt="tip 1 " width="300"/>
 
