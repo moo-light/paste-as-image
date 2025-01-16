@@ -81,12 +81,12 @@ saveImage(bitmap, savePath) {
         }
         wc.SaveBitmap(fullPath, imageType)
         saveImageGui.Destroy()
-        FileDelete("temp.png")
+        FileExist("temp.png") ? FileDelete("temp.png") : ""
     }
     ; cancel function
     CancelClick() {
         saveImageGui.Destroy()
-        FileDelete("temp.png")
+        FileExist("temp.png") ? FileDelete("temp.png") : ""
     }
     ; open image in default image viewer
     PictureClick() {
